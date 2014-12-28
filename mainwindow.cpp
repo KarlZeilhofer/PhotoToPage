@@ -322,9 +322,6 @@ void MainWindow::keyPressEvent(QKeyEvent* event){
     if(!(event->modifiers() & Qt::ControlModifier) &&
             !(event->modifiers() & Qt::AltModifier)){
         switch(event->key()){
-//		case Qt::Key_Tab:
-//			second->animateClick();
-//			break;
         case Qt::Key_F:
             ui->actionAdd_Page->trigger();
             break;
@@ -349,56 +346,6 @@ void MainWindow::keyPressEvent(QKeyEvent* event){
         case Qt::Key_Delete:
             deleteSelectedItems();
             break;
-
-//		case Qt::Key_Dead_Circumflex: // TODO: caret circumflex
-//			pow->animateClick();
-//			break;
-
-
-//	//	case Qt::Key_: // todo: key for Sigma+
-//	//		TIKey::setKey(TIKey::KEY_SigmaP);
-//	//		sm->input();
-//	//		break;
-//		case Qt::Key_ParenLeft:
-//			bracketo->animateClick();
-//			break;
-//		case Qt::Key_ParenRight:
-//			bracketc->animateClick();
-//			break;
-
-
-//		case Qt::Key_Backspace:
-//			del->animateClick();
-//			break;
-//		case Qt::Key_Comma: // Komma
-//		case Qt::Key_Period: // Punkt
-//			dot->animateClick();
-//			break;
-//		case Qt::Key_Underscore:
-//			sign->animateClick();
-//			break;
-
-//		case Qt::Key_Enter:
-//		case Qt::Key_Return:
-//			equ->animateClick();
-//			break;
-
-//		case Qt::Key_Plus:
-//			add->animateClick();
-//			break;
-//		case Qt::Key_Minus:
-//			if(event->modifiers() & Qt::ShiftModifier){
-//				sign->animateClick();
-//			}else{
-//				sub->animateClick();
-//			}
-//			break;
-//		case Qt::Key_Asterisk: // mul
-//			mul->animateClick();
-//			break;
-//		case Qt::Key_Slash:
-//			div->animateClick();
-//			break;
 
         default:
             QWidget::keyPressEvent(event);
