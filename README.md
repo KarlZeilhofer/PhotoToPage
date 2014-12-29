@@ -1,4 +1,4 @@
-#### PhotoToPage
+# PhotoToPage
 Karl Zeilhofer, 29.12.2014
 
 
@@ -8,6 +8,7 @@ scanning them in a flat bed scanner, you used your handy smartphone
 or your digicam.
 Now you want to crop and enhance the images, and put them together
 into a single PDF. Then PhotoToPage could be your solution.
+Main Focus of the program is on usability, so **you can be very fast on many images**!
 
 ## Status:
 For now, the software is in alpha status. Some very important
