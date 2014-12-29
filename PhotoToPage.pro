@@ -25,3 +25,8 @@ SOURCES += crosshair.cpp \
            view.cpp \
     rotatedrect.cpp
            
+
+OTHER_FILES += \
+    README.md \
+    LICENSE \
+    .gitignore
