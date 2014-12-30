@@ -9,3 +9,5 @@
 
 28.12.2014
     Initial alpha release on github
+        git remote add origin https://github.com/KarlZeilhofer/PhotoToPage.git
+        git push -u origin master
