@@ -52,7 +52,8 @@
     </property>
     <addaction name="actionExportCurrentImage"/>
     <addaction name="actionExportAllImages"/>
-    <addaction name="actionCancel"/>
+    <addaction name="separator"/>
+    <addaction name="actionAuto_Advance"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -72,7 +73,9 @@
     <property name="title">
      <string>View</string>
     </property>
-    <addaction name="actionScale_to_Window"/>
+    <addaction name="actionView_FitToScreen"/>
+    <addaction name="separator"/>
+    <addaction name="actionView_AutofitToScreen"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuElements"/>
@@ -93,6 +96,9 @@
    <property name="text">
     <string>Open</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="actionExportCurrentImage">
    <property name="text">
@@ -106,12 +112,12 @@
   </action>
   <action name="actionNext">
    <property name="text">
-    <string>Next</string>
+    <string>Next (N)</string>
    </property>
   </action>
   <action name="actionPrev">
    <property name="text">
-    <string>Previous</string>
+    <string>Previous (P)</string>
    </property>
   </action>
   <action name="actionExit">
@@ -134,12 +140,15 @@
     <string>Add Thumb Hiding (T)</string>
    </property>
   </action>
-  <action name="actionScale_to_Window">
+  <action name="actionView_AutofitToScreen">
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Scale to Window</string>
+    <string>Autofit to Screen</string>
    </property>
   </action>
   <action name="actionAdd_Page">
@@ -155,6 +164,25 @@
   <action name="actionExportAllImages">
    <property name="text">
     <string>All Images (Ctrl+Enter)</string>
+   </property>
+  </action>
+  <action name="actionAuto_Advance">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Auto Advance</string>
+   </property>
+  </action>
+  <action name="actionView_FitToScreen">
+   <property name="text">
+    <string>Fit to Screen</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
  </widget>

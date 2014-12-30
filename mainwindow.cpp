@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     recentPageNumber = set.value("recentPageNumber", 0).toInt();
     recentThumbNumber = 0;
-    ui->actionScale_to_Window->setChecked(true);
+    exportingAll=false;
+    timer = new QTimer(this);
 
 	scene = ui->graphicsView->getScene();
 
@@ -60,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setImage();
 
     connect(ui->graphicsView, SIGNAL(finishedRotatedRect(RotatedRect*)), this, SLOT(onRotatedRectFinished(RotatedRect*)));
+    timer->singleShot(350, ui->actionView_FitToScreen, SIGNAL(triggered())); // fit to screen, after window is shown
 }
 
 MainWindow::~MainWindow()
@@ -99,7 +101,7 @@ void MainWindow::setImage()
             fileName=files.at(curFileIndex).absoluteFilePath();
             pixmap = QPixmap(fileName);
 
-            if(ui->actionScale_to_Window->isChecked()){
+            if(ui->actionView_AutofitToScreen->isChecked()){
                 scaleToImage();
             }
 
@@ -123,7 +125,6 @@ void MainWindow::setImage()
 void MainWindow::scaleToImage()
 {
     ui->graphicsView->setVisibleRectangle(QRectF(0,0,pixmap.width(), pixmap.height()));
-
 }
 
 void MainWindow::deleteSelectedItems()
@@ -137,6 +138,184 @@ void MainWindow::deleteSelectedItems()
         }
     }
     writeToDrawingsFile();
+}
+
+
+void MainWindow::enhanceBlackWhiteText(QImage* image, QString name)
+{
+    if(!image){
+        qDebug()<<"Nullpointer passed to " << __func__;
+        return;
+    }
+
+#define DoSaveHistogram
+
+    QRgb col;
+    int gray;
+    int width = image->width();
+    int height = image->height();
+    double hist[256]={0}; // histogramm
+    int histMax = 0;
+    int histMaxGrayValue; // 0...255
+
+    for (int i = 0; i < width; ++i)
+    {
+        for (int j = 0; j < height; ++j)
+        {
+            col = image->pixel(i, j);
+            gray = qGray(col);
+            hist[gray]++;
+
+            image->setPixel(i, j, qRgb(gray, gray, gray));
+        }
+    }
+
+#ifdef DoSaveHistogram
+    QPixmap histIm(256,256);
+    QPainter histPainter(&histIm);
+    // clear image:
+    histPainter.fillRect(QRectF(0,0,265,256), Qt::white);
+#endif
+
+    // find maximum in histogram:
+    for(int i=0;i<256;i++){
+        if(hist[i]>histMax){
+            histMax = hist[i];
+            histMaxGrayValue = i;
+        }
+    }
+
+    // scale histogram to 0..1:
+    for(int i=0;i<256;i++){
+        hist[i] /= hist[histMaxGrayValue];
+    }
+
+
+    // enhance image, by spreading the histogram:
+    // TODO: very good method is:
+    int blackBorder = histMaxGrayValue-110;
+    int whiteBorder = histMaxGrayValue-30;
+
+
+#ifdef DoSaveHistogram
+    histPainter.setPen(Qt::darkGreen);
+    // draw histogram-bars:
+    for(int i=0;i<256;i++){
+        histPainter.drawLine(i, 255, i, 255 - (int)(10*256*hist[i])); // ATTENTION, only lower 10% are shown.
+    }
+    // draw borders:
+    histPainter.setPen(Qt::red);
+    histPainter.drawLine(blackBorder, 0, blackBorder, 255);
+    histPainter.drawLine(whiteBorder, 0, whiteBorder, 255);
+
+    // save histogram image
+    QFileInfo fi = files.at(curFileIndex);
+    static int suffix=0;
+    char numStr[10]={0};
+    if(name.isEmpty())
+        sprintf(numStr, "%03d", suffix++);
+    fi.setFile(fi.absolutePath() + "/pages/"+name+"_hist"+QString(numStr)+".png");
+    qDebug() << fi.absoluteFilePath();
+    histIm.save(fi.absoluteFilePath(), "png");
+#endif
+
+
+
+
+//    // white-border: from black to white: value before the large peak comes.
+//    //   we make use of small noise in the histogramm, which is dominated by the big slope of the peak
+//    //  start at the peak of the histogramm,
+//    //   go towards black, Steps of 1% downwards must occure. When we find
+//    //   a value, that is higher, than it's whiter neighbour, set this as white-border
+//    // black-border: start at black, and find the first value that is larger than 1.5%.
+
+//    // Find black border:
+//    int blackBorder = 0;
+//    for(blackBorder=0; blackBorder<histMaxGrayValue; blackBorder++){
+//        if(hist[blackBorder]>0.015)
+//            break;
+//    }
+//    // blackBorder is now in the range [0,peak[
+
+//    // Find white border:
+//    int whiteBorder;
+//    bool steepDeclineFound = false;
+//    for(whiteBorder=histMaxGrayValue; blackBorder+1 < whiteBorder; whiteBorder--){
+//        if(!steepDeclineFound && hist[whiteBorder+1]-hist[whiteBorder] > 0.01)
+//            steepDeclineFound = true;
+//        if(steepDeclineFound && hist[whiteBorder] > hist[whiteBorder+1]){
+//            whiteBorder++;
+//            break;
+//        }
+//    }
+//    // whiteBorder is now in the range of ]blackBorder, peak-2]
+
+
+
+    qDebug() << "black/white border = (" << blackBorder << "/" << whiteBorder << ")";
+    if(blackBorder < whiteBorder){ // plausability check
+        // transform the gray values, where x are the old values
+        // and y are the new values
+        // y(x) = k*(x-x0) + y0
+        // y(x) = 255/(xW-xB)*(x-xB) + 0
+
+        double x,y;
+        //double xB=blackBorder;
+        double xB=blackBorder;
+        double xW=whiteBorder;
+
+        // transform each pixel!
+        for (int i = 0; i < width; ++i)
+        {
+            for (int j = 0; j < height; ++j)
+            {
+                x = image->pixel(i, j) & 0xff; // get gray-value (mask blue channel)
+
+
+                switch(1){
+                case 1:// linear scaling:
+                    y = 255.0/(xW-xB)*(x-xB) + 0;
+                    break;
+                case 2: // move non-white pixel towards black
+                    // (führt zu verpixelterm Schriftbild, weil die Graustufen zu Weiß hin fehlen.)
+                    if(x>=xW){
+                        y = 255;
+                    }else{
+                        y = x-xB;
+                    }
+                    break;
+                }
+
+
+
+
+                gray = round(y);
+                gray = fmax(gray,0);
+                gray = fmin(gray, 255);
+
+                image->setPixel(i, j, qRgb(gray, gray, gray));
+            }
+        }
+
+        // TODO: blacken thin, light-gray lines
+        // what algorithm?
+    }
+}
+
+void MainWindow::exportOfImageFinished()
+{
+    if(ui->actionAuto_Advance->isChecked() && !exportingAll){
+        ui->actionNext->trigger();
+    }
+
+    if(exportingAll){
+        ui->actionNext->trigger();
+        if(curFileIndex == exportingAllStartingFileIndex) { // turned one round
+            exportingAll = false;
+        }else{
+            ui->actionExportCurrentImage->trigger();
+        }
+    }
 }
 
 void MainWindow::on_actionNext_triggered()
@@ -407,6 +586,7 @@ void MainWindow::on_actionExportCurrentImage_triggered()
         }
     }
 
+
     for(int i=0; i<rotRects.size(); i++){
         RotatedRect* rr = rotRects.at(i);
         if(rr->type == RotatedRect::Page){
@@ -429,17 +609,43 @@ void MainWindow::on_actionExportCurrentImage_triggered()
             QImage* im = new QImage(r.width(), r.height(), QImage::Format_RGB32);
             QPainter painter(im);
             renderScene.render(&painter, QRectF(), r);
-            im->save(pageDir.absolutePath()+"/page_"+rr->name+".jpg", "jpg", 100);
+
+            im->save(pageDir.absolutePath()+"/"+rr->name+"_1color.jpg", "jpg", 100);
+            enhanceBlackWhiteText(im, rr->name);
+            im->save(pageDir.absolutePath()+"/"+rr->name+"_2enhanced.jpg", "jpg", 100);
         }
     }
-    ui->actionNext->trigger();
+
+
+    exportOfImageFinished();
 }
 
 void MainWindow::on_actionExportAllImages_triggered()
 {
-    // TODO
-    QMessageBox::warning(this, tr("Not Implemented"),
-                                    tr("This feature isn't implemented yet. "),
-                                    QMessageBox::Ok,
-                                    QMessageBox::Ok);
+    exportingAll = true;
+    exportingAllStartingFileIndex = curFileIndex;
+    ui->actionExportCurrentImage->trigger();
+}
+
+void MainWindow::on_actionView_AutofitToScreen(bool checked)
+{
+    if(checked){
+        on_actionView_FitToScreen_triggered();
+    }
+}
+
+void MainWindow::on_actionView_FitToScreen_triggered()
+{
+    scaleToImage();
+}
+
+void MainWindow::on_actionAbout_triggered()
+{
+    QMessageBox::about(this, "PhotoToPage", QString(
+                           "Based on Qt 4.8.3\n"
+                           "Developed by Mechatronik Karl Zeilhofer\n"
+                           "http://www.zeilhofer.co.at \n"
+                           "Source Code on Github \n"
+                           "https://github.com/KarlZeilhofer/PhotoToPage \n"
+                           "License: GPL v3"));
 }

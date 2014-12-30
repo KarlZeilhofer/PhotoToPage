@@ -29,4 +29,5 @@ SOURCES += crosshair.cpp \
 OTHER_FILES += \
     README.md \
     LICENSE \
-    .gitignore
+    .gitignore \
+    HISTORY.md

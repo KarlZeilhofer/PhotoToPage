@@ -34,6 +34,10 @@ private:
     void removeDrawings();
     void scaleToImage();
     void deleteSelectedItems();
+    void enhanceBlackWhiteText(QImage *image, QString name = QString());
+    void exportOfImageFinished();
+
+
 
 public slots:
     void onRotatedRectFinished(RotatedRect* rotRect);
@@ -53,6 +57,12 @@ private slots:
     void on_actionExportCurrentImage_triggered();
 
     void on_actionExportAllImages_triggered();
+
+    void on_actionView_AutofitToScreen(bool checked);
+
+    void on_actionView_FitToScreen_triggered();
+
+    void on_actionAbout_triggered();
 
 public:
     static MainWindow* app;
@@ -74,6 +84,9 @@ private:
     QList<RotatedRect*> rotRects;
     int recentPageNumber; // is for suggestions for the pagename of a new page
     int recentThumbNumber; // is for enumeration
+    bool exportingAll;
+    int exportingAllStartingFileIndex;
+    QTimer* timer; // timer for various tasks
 
 };
 

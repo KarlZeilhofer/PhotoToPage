@@ -44,7 +44,7 @@ private:
 	Scene* scene;
     CrossHair *crossHair;
     DrawingItem* newItem;
-    static const qreal zoomFactor=1.2;
+    static const qreal zoomFactor=1.1;
     int drawingState;
         // 0: no tool selected
         // 1: tool selected, add point on mouse-move, waiting for first click

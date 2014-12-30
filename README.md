@@ -40,13 +40,8 @@ You can add thumb-hiding rectangles with the shortcut 'T'.
 ## TODOs:
 - Status Line with current tool, or tool hints
   perhaps also the cursor should change (like in Sketchup)
-- Automated Image-Enhancement.
-  The colored image should be reduced to grayscale, and then the used
-  valuerange should be trimmed (see the software Shotwell Viewer
-  for Linux)
 - Keyboard shortcuts are productive, but a bit messy. Tidy them up.
   Communicate them to the user.
-- batch process all files in the folder.
 - put the output files into one PDF
 
 ## Source code:
