@@ -63,7 +63,6 @@ QPolygonF RotatedRect::getPolygonInScene()
 }
 
 int RotatedRect::addPoint(QPointF p) {
-
     // set position of the item with the initial point.
     // this is important for the default-implementation of rubberband-selection, because
     // it assumes, that the point (0,0) is within the shape of the item!
@@ -92,7 +91,7 @@ int RotatedRect::addPoint(QPointF p) {
         points.replace(2, t.inverted().map(points.at(2)));
     }
 
-
+    prepareGeometryChange();
     return neededPoints - points.size();
 }
 
@@ -103,27 +102,46 @@ void RotatedRect::updateLastPoint(QPointF p) {
         points.replace(points.size()-1, p);
     }
     setSelected(false);
+    prepareGeometryChange();
 }
 
 QPainterPath RotatedRect::shape() const {
     QPainterPath path;
     path.moveTo(boundingRect().topLeft());
     path.addRect(boundingRect());
-    path.closeSubpath();
     return path;
 }
 
 QRectF RotatedRect::boundingRect() const
 {
-    if(points.size() == 4){
+    switch(points.size()){
+    case 1:{
+        QPointF A=points.at(0);
+        return QRectF(A.x()-0.5, A.y()-0.5,
+                      +1, +1);
+    }break;
+    case 2:{
+        QPointF A=points.at(0);
+        QPointF B=points.at(1);
+        return QRectF(fmin(A.x(), B.x())-0.5, fmin(A.y(), B.y())-0.5,
+                      fabs(A.x()-B.x())+1, fabs(A.y()-B.y())+1);
+    }break;
+    case 3:{
+        QPointF A=points.at(0);
+        QPointF B=points.at(1);
+        QPointF C=points.at(2);
+        return QRectF(fmin(A.x(), B.x())-0.5, fmin(C.y(), A.y())-0.5,
+                      fabs(A.x()-B.x())+1, fabs(C.y()-A.y())+1);
+    }break;
+    case 4:{
         QPointF A=points.at(0);
         QPointF B=points.at(1);
         QPointF C=points.at(2);
         QPointF D=points.at(3);
-
-        return QRectF(fmin(A.x(), B.x()), fmin(C.y(), D.y()), fabs(A.x()-B.x()), fabs(C.y()-D.y()));
-    }else
-    {
+        return QRectF(fmin(A.x(), B.x())-0.5, fmin(C.y(), D.y())-0.5,
+                      fabs(A.x()-B.x())+1, fabs(C.y()-D.y())+1);
+    }break;
+    default:
         return QRectF();
     }
 }

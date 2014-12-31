@@ -78,18 +78,20 @@ void MainWindow::on_actionOpen_triggered()
 {
     fileName = QFileDialog::getOpenFileName(this,
         tr("Open Image"), dir.path(), tr("Image Files (*.jpg)"));
-    QFileInfo info(fileName);
-    dir = info.dir();
-    updateFileList();
-    // search this file in the file list
-    for(int n=0; n< files.size(); n++){
-        if(files.at(n) == info){
-            curFileIndex = n;
-            break;
+    if(!fileName.isEmpty()){
+        QFileInfo info(fileName);
+        dir = info.dir();
+        updateFileList();
+        // search this file in the file list
+        for(int n=0; n< files.size(); n++){
+            if(files.at(n) == info){
+                curFileIndex = n;
+                break;
+            }
         }
-    }
 
-    setImage();
+        setImage();
+    }
 }
 
 void MainWindow::setImage()
@@ -375,9 +377,7 @@ void MainWindow::writeToDrawingsFile()
     set.sync();
 }
 
-
-// version with nested groups,
-// nested arrays didn't work! see http://www.qtforum.de/forum/viewtopic.php?f=1&t=16671
+// version with nested arrays
 void MainWindow::loadFromDrawingsFile()
 {
     bool ok;
@@ -385,16 +385,13 @@ void MainWindow::loadFromDrawingsFile()
     QSettings set(drawingFN, QSettings::IniFormat, this);
     qDebug() << __func__ << " with " << drawingFN;
 
+    // delete all drawing items
+    removeDrawings();
 
-
-    set.beginGroup("RotatedRectangles");
-    int size = set.value("size").toInt(&ok);
-    if(!ok) qDebug() << "Error on reding Int in "<< __FILE__<<":" << __LINE__;
+    int size = set.beginReadArray("RotatedRectangles");
     qDebug()<<"size = " << size;
-
-
     for(int i=0; i<size; i++){
-        set.beginGroup(QString::number(i+1));
+        set.setArrayIndex(i);
 
         RotatedRect* rr;
         QString name = set.value("name").toString();
@@ -404,27 +401,70 @@ void MainWindow::loadFromDrawingsFile()
         rr->type = (RotatedRect::Type)(set.value("type").toInt(&ok));
         if(!ok) qDebug() << "Error on reding Int in "<< __FILE__<<":" << __LINE__;
 
-        set.beginGroup(rr->name);
-
-        int sizeP = set.value("size").toInt(&ok);
-        if(!ok) qDebug() << "Error on reding Int in "<< __FILE__<<":" << __LINE__;
+        int sizeP = set.beginReadArray(name);
         qDebug()<<"sizeP = " << sizeP;
         for(int ii=0; ii<sizeP; ii++){
-            set.beginGroup(QString::number(ii+1));
-
+            set.setArrayIndex(ii);
             QPointF p = set.value("scenePoint").toPoint();
             qDebug()<< "read point["<<ii<<"] = "<<p;
             rr->addPoint(p);
-            set.endGroup();
         }
-        set.endGroup();
+        set.endArray();
         rotRects.append(rr);
         qDebug() << "loaded " << rr;
-
-        set.endGroup();
     }
-    set.endGroup();
+    set.endArray();
 }
+
+// version with nested groups,
+// nested arrays didn't work! see http://www.qtforum.de/forum/viewtopic.php?f=1&t=16671
+//void MainWindow::loadFromDrawingsFile()
+//{
+//    bool ok;
+//    QString drawingFN = fileName + ".ptp"; // extension stands for photo to page
+//    QSettings set(drawingFN, QSettings::IniFormat, this);
+//    qDebug() << __func__ << " with " << drawingFN;
+
+
+
+//    set.beginGroup("RotatedRectangles");
+//    int size = set.value("size").toInt(&ok);
+//    if(!ok) qDebug() << "Error on reding Int in "<< __FILE__<<":" << __LINE__;
+//    qDebug()<<"size = " << size;
+
+
+//    for(int i=0; i<size; i++){
+//        set.beginGroup(QString::number(i+1));
+
+//        RotatedRect* rr;
+//        QString name = set.value("name").toString();
+//        qDebug()<<"name = " << name;
+//        rr = new RotatedRect(0, ui->graphicsView->getScene());
+//        rr->name = name;
+//        rr->type = (RotatedRect::Type)(set.value("type").toInt(&ok));
+//        if(!ok) qDebug() << "Error on reding Int in "<< __FILE__<<":" << __LINE__;
+
+//        set.beginGroup(rr->name);
+
+//        int sizeP = set.value("size").toInt(&ok);
+//        if(!ok) qDebug() << "Error on reding Int in "<< __FILE__<<":" << __LINE__;
+//        qDebug()<<"sizeP = " << sizeP;
+//        for(int ii=0; ii<sizeP; ii++){
+//            set.beginGroup(QString::number(ii+1));
+
+//            QPointF p = set.value("scenePoint").toPoint();
+//            qDebug()<< "read point["<<ii<<"] = "<<p;
+//            rr->addPoint(p);
+//            set.endGroup();
+//        }
+//        set.endGroup();
+//        rotRects.append(rr);
+//        qDebug() << "loaded " << rr;
+
+//        set.endGroup();
+//    }
+//    set.endGroup();
+//}
 
 // ask user to enter page-nuber of the cutout, and
 // add this cutout to the list of cutouts!
