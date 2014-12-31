@@ -1,3 +1,8 @@
+30.12.2014
+    fixed some major bugs
+    recorded a demonstration video which is on youtube:
+        https://www.youtube.com/watch?v=93O1FDtg6BI
+
 29.12.2014
     Added conversion to Grayscale and simple image enhancement
     Added Batchconversion (CTRL+Enter)
