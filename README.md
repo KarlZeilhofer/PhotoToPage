@@ -11,11 +11,12 @@ into a single PDF. Then PhotoToPage could be your solution.
 Main Focus of the program is on usability, so **you can be very fast on many images**!
 
 ## Status:
-For now, the software is in alpha status. Some very important
-features are still missing.
+For now, the software is in alpha status. Some features are still missing, but it
+is already very productive.
 
 ## Usage:
-[watch on **youtube**](https://www.youtube.com/watch?v=93O1FDtg6BI)
+[Watch on **Youtube**](https://www.youtube.com/watch?v=93O1FDtg6BI)
+
 Open a jpg-file in a folder.
 Press 'F' to define the region of the page.
 Click on the left border of the page, move curosr to the right edge of the page and click,
@@ -48,3 +49,7 @@ You can add thumb-hiding rectangles with the shortcut 'T'.
 ## Source code:
 The software was developed on Kubuntu using the Qt Creator and the Qt SDK Version 4.8.6
 The software is published under the GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007
+
+## Relationship
+The project [Scan Tailor](https://github.com/scantailor/scantailor) has similar aims.
+It is by far more advanced, but perhaps my little programm has still it's right to exist.
